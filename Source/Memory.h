@@ -20,6 +20,7 @@ namespace Memory
 	extern bool		HideThread(HANDLE hThread);
 	extern DWORD GetModuleSize(std::string szModuleName);
 	extern DWORD FindPattern(BYTE * ArrayOfBytes, std::string Module, int SizeOf);
+	extern DWORD FindPattern(HANDLE process, DWORD start, DWORD size, const char* sig, const char* mask, DWORD pattern_offset, DWORD address_offset);
 
 
 	template<class T> T Read(DWORD dwBaseAddress)

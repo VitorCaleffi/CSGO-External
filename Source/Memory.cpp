@@ -18,42 +18,37 @@ namespace Memory
 	{
 		return iLastAddedModule;
 	}
-	/*
-	DWORD FindPattern(BYTE * ArrayOfBytes, std::string Module, int SizeOf)
+	
+	bool DataCompare(const BYTE* pData, const BYTE* pMask, const char* pszMask)
 	{
-		long int x = 0, y = 0;
+		for(; *pszMask; ++pszMask, ++pData, ++pMask)
+			if(*pszMask == 'x' && *pData != *pMask)
+				return false;
+		return (*pszMask == '\0');
+	}
+	
+	DWORD FindPattern(HANDLE process, DWORD start, DWORD size, const char* sig, const char* mask, DWORD pattern_offset, DWORD address_offset)
+	{
+		BYTE* data = new char[size];
 
-		DWORD ModuleSize = Memory::GetModuleSize(Module);
-		DWORD ModuleBase = Memory::GetModule(Module); //57D20000 + 0xA871D4
-		//BYTE * ModuleBuff = (BYTE *)malloc(ModuleSize);
-		DWORD BytesFound = 0;
-		DWORD SizeOfMask = SizeOf;
-		DWORD FinalAddre = 0;
+		unsigned long bytesRead;
+		if(!ReadProcessMemory(process, (LPVOID)start, data, size, &bytesRead))
+			return 0;
 
-		byte pattern[16] = { 0xE0, 0x19, 0xD1, 0x1D, 0xFD, 0x02, 0x00, 0x00, 0xC4, 0x71, 0x7A, 0x58, 0xD4, 0x75, 0x7A, 0x58 };
-		//ReadProcessMemory(Memory::hProcess, LPCVOID(ModuleBase), &ModuleBuff, ModuleSize, NULL);
-
-		for (x; x < ModuleSize; x++)
+		for(DWORD i = 0; i < size; i++)
 		{
-			for (y; y < SizeOf; y++)
+			if(DataCompare((const BYTE*)(data + i), (const BYTE*)sig, mask))
 			{
-				if (pattern[y] == '?')
-					continue;
-
-				if (pattern[y] != Memory::Read<byte>(ModuleBase + x + y))
-					break;
-				
-				if (y == (SizeOf - 1) && pattern[y] == Memory::Read<byte>(ModuleBase + x + y))
-				{
-					FinalAddre = (x + y) - SizeOf;
-					//free(&ModuleBuff);
-					return FinalAddre;
-				}
+				free(data);
+				DWORD add = start + i + pattern_offset;
+				fflush(stdout);
+				ReadProcessMemory(process, (LPVOID)add, &add, sizeof(add), &bytesRead);
+				return add + address_offset;
 			}
 		}
-		//free(&ModuleBuff);
+		free(data);
 		return 0;
-	}*/
+	}
 
 	DWORD GetModuleSize(std::string szModuleName)
 	{
