@@ -3,19 +3,18 @@
 
 #include "stdafx.h"
 
-
-struct Helper_t
+struct Offsets_t
 {
-	DWORD		MyAddres;
-	DWORD		ResourceAddr;
-	DWORD		PlantedAddr;
-	int			MyTeam;
-	int			BombIndex;
-	char		CountDrop;
-	bool		C4Planted;
-	int			Defus;
+	uintptr_t		DwViewMatrix;
+	uintptr_t		cLocalPlayer;
+	uintptr_t		cRadarStruct;
+	uintptr_t		cEntityList;
+	uintptr_t		DwClientState;
+	uintptr_t		DwGameDir;
+	uintptr_t		DwMapName;
+	uintptr_t		DwMapDir;
 };
 
-extern Helper_t Help;
+extern Offsets_t Offsets;
 
 #endif

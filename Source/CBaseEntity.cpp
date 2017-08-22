@@ -5,12 +5,20 @@ int WeaponID;
 
 CBaseEntity::CBaseEntity(int nIndex)
 {
-	this->dwEntity = Memory::Read<DWORD>((Memory::GetModule("client") + cEntityList + nIndex * 0x10) - 0x10);
-	this->iIndex = nIndex;
+	if (nIndex == 0)
+	{
+		this->dwEntity = Memory::Read<DWORD>(Memory::GetModule("client") + Offsets.cLocalPlayer);
+		this->iIndex = 1;
+	}
+	else
+	{
+		this->dwEntity = Memory::Read<DWORD>((Memory::GetModule("client") + Offsets.cEntityList + nIndex * 0x10) - 0x10);
+		this->iIndex = nIndex;
+	}
 
 
-	DWORD RadarStruct = Memory::Read<DWORD>(Memory::GetModule("client") + cRadarStruct);
-	RadarStruct = Memory::Read<DWORD>(RadarStruct + 0x50);
+	DWORD RadarStruct = Memory::Read<DWORD>(Memory::GetModule("client") + Offsets.cRadarStruct);
+	RadarStruct = Memory::Read<DWORD>(RadarStruct + 0x54);
 
 	uintptr_t pNext = Memory::Read<uintptr_t>(this->dwEntity + 8);
 	pNext = Memory::Read<uintptr_t>(pNext + 8);
@@ -19,7 +27,7 @@ CBaseEntity::CBaseEntity(int nIndex)
 
 	ReadProcessMemory(Memory::hProcess, LPCVOID(pNext), &this->ClassName, sizeof(this->ClassName), NULL);
 
-	ReadProcessMemory(Memory::hProcess, LPCVOID(RadarStruct + (0x1E0 * this->iIndex + 0x24)), &this->Name, sizeof(this->Name), NULL);
+	ReadProcessMemory(Memory::hProcess, LPCVOID(RadarStruct + (0x1E0 * (this->iIndex-1) + 0x204)), &this->Name, sizeof(this->Name), NULL);
 }
 bool CBaseEntity::isDormant()
 {
@@ -80,6 +88,22 @@ matrix3x4_t CBaseEntity::BoneData( int iBone )
 {
 	return Memory::Read<matrix3x4_t>( Memory::Read<DWORD>( dwEntity + cBoneMatrix ) + 0x30 * iBone );
 }
+
+Valve::Vector3 CBaseEntity::ValveEyePosition(void)
+{
+	return (this->m_VvecOrigin() + this->m_VvecViewOffset());
+}
+Valve::Vector3 CBaseEntity::m_VvecOrigin(void)
+{
+	return Memory::Read<Valve::Vector3>(dwEntity + c_vecOrigin);
+}
+Valve::Vector3 CBaseEntity::m_VvecViewOffset(void)
+{
+	return Memory::Read<Valve::Vector3>(dwEntity + 0x104);
+}
+
+
+
 Vector CBaseEntity::EyePosition( void )
 {
 	return ( this->m_vecOrigin() + this->m_vecViewOffset() );
@@ -108,7 +132,7 @@ void CBaseEntity::getBoneData( int iBone, matrix3x4_t& m3x4Out )
 Vector CBaseEntity::WeaponClassOr()
 {
 	DWORD ActualWeaponID = Memory::Read<DWORD>(this->dwEntity + 0x12B8) & 0xFFF;
-	DWORD WeaponClass = Memory::Read<DWORD>(Memory::GetModule("client") + cEntityList + (-0x10 + (ActualWeaponID * 0x10)));
+	DWORD WeaponClass = Memory::Read<DWORD>(Memory::GetModule("client") + Offsets.cEntityList + (-0x10 + (ActualWeaponID * 0x10)));
 	return Memory::Read<Vector>(WeaponClass + c_vecViewOffset);
 }
 
@@ -122,7 +146,7 @@ int CBaseEntity::WeaponName(void)
 
 	WeaponHandle = Memory::Read<int>(this->dwEntity + 0x12C0);
 	WeaponIDFirst = WeaponHandle & 0xFFF;
-	CWeaponBase = Memory::Read<DWORD>(Memory::GetModule("client") + cEntityList + (-0x10 + (WeaponIDFirst * 0x10)));
+	CWeaponBase = Memory::Read<DWORD>(Memory::GetModule("client") + Offsets.cEntityList + (-0x10 + (WeaponIDFirst * 0x10)));
 	WeaponID = Memory::Read<int>(CWeaponBase + 0x1684);
 
 	return (WeaponID < 50) ? WeaponID : 0;

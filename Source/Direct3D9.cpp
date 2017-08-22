@@ -299,6 +299,7 @@ namespace Direct3D9
 		RECT rect_client, rect_app;
 
 		GetClientRect( hWndTarget, &rect_client );
+
 		iResolution[ 0 ] = rect_client.right;
 		iResolution[ 1 ] = rect_client.bottom;
 		iCenter[ 0 ] = iResolution[ 0 ] / 2;
@@ -311,6 +312,12 @@ namespace Direct3D9
 
 		hWndOverlay		= CreateWindowEx( WS_EX_TOPMOST | WS_EX_COMPOSITED | WS_EX_TRANSPARENT | WS_EX_LAYERED, ( LPCSTR )szOverlayTitle.c_str(), ( LPCSTR )szOverlayTitle.c_str(),
 						  WS_POPUP, CW_USEDEFAULT, CW_USEDEFAULT, iResolution[ 0 ], iResolution[ 1 ], 0, 0, NULL, 0 );
+
+		SetWindowLong(hWndOverlay, GWL_STYLE, WS_POPUP);
+
+		SetWindowLong(hWndOverlay, GWL_EXSTYLE, GetWindowLong(hWndOverlay, GWL_EXSTYLE) | WS_EX_LAYERED | WS_EX_TRANSPARENT | WS_EX_TOOLWINDOW);
+		SetWindowPos(hWndOverlay, HWND_TOPMOST, 0, 0, iResolution[0], iResolution[1], 0);
+		SetLayeredWindowAttributes(hWndOverlay, 0, 255, LWA_ALPHA);
 
 		if( !hWndOverlay )
 			return E_FAIL;

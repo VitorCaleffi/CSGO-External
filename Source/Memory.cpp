@@ -19,34 +19,45 @@ namespace Memory
 		return iLastAddedModule;
 	}
 	
-	bool DataCompare(const BYTE* pData, const BYTE* pMask, const char* pszMask)
+	bool CompareBytes(const unsigned char* bytes, const char* pattern)
 	{
-		for(; *pszMask; ++pszMask, ++pData, ++pMask)
-			if(*pszMask == 'x' && *pData != *pMask)
+		for (; *pattern; *pattern != ' ' ? ++bytes : bytes, ++pattern) {
+			if (*pattern == ' ' || *pattern == '?')
+				continue;
+			if (*bytes != getByte(pattern))
 				return false;
-		return (*pszMask == '\0');
+			++pattern;
+		}
+		return true;
 	}
-	
-	DWORD FindPattern(HANDLE process, DWORD start, DWORD size, const char* sig, const char* mask, DWORD pattern_offset, DWORD address_offset)
+
+	uintptr_t FindPattern(const std::string& module, const char* pattern, uintptr_t patternOffset, uintptr_t addressOffset)
 	{
-		BYTE* data = new char[size];
+		auto ImgBase = GetModule(module);
+		auto ImgSize = GetModuleSize(module);
 
+		BYTE* Data = new BYTE[ImgSize];
 		unsigned long bytesRead;
-		if(!ReadProcessMemory(process, (LPVOID)start, data, size, &bytesRead))
-			return 0;
 
-		for(DWORD i = 0; i < size; i++)
-		{
-			if(DataCompare((const BYTE*)(data + i), (const BYTE*)sig, mask))
-			{
-				free(data);
-				DWORD add = start + i + pattern_offset;
-				fflush(stdout);
-				ReadProcessMemory(process, (LPVOID)add, &add, sizeof(add), &bytesRead);
-				return add + address_offset;
+		ReadProcessMemory(hProcess, (LPVOID)ImgBase, Data, ImgSize, &bytesRead);
+
+		auto pb = const_cast< unsigned char* >(Data);
+		auto max = ImgBase - 0x1000;
+
+		for (auto off = 0UL; off < max; ++off) {
+			if (CompareBytes(pb + off, pattern)) {
+
+				auto add = ImgBase + off + patternOffset;
+
+				ReadProcessMemory(hProcess, (LPVOID)add, &add, sizeof(uintptr_t), &bytesRead);
+				add -= ImgBase;
+
+				free(Data);
+				return add + addressOffset;
+				
 			}
 		}
-		free(data);
+		free(Data);
 		return 0;
 	}
 
@@ -108,6 +119,7 @@ namespace Memory
 			return false;
 		return true;
 	}
+
 	DWORD GetModule(std::string szName)
 	{
 		for (int i = 0; i < GetLastAddedModule(); i++)
@@ -117,6 +129,8 @@ namespace Memory
 		}
 		return 0x0;
 	}
+
+
 	void AddModule(std::string szName, std::string szModuleName)
 	{
 		int i = GetLastAddedModule();

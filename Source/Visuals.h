@@ -18,9 +18,9 @@ private:
 
 private:
 	void	DrawPlayer( CBaseEntity* pEntity );
-	void	DrawHitbox( CBaseEntity* pEntity, int iHitbox, Color color );
 
 public:
+	CBaseEntity* LocalPlayer;
 	Visuals( void );
 	void	Main( void );
 

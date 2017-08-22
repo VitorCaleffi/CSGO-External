@@ -38,6 +38,12 @@ public:
 
 	matrix3x4_t	BoneData( int iBone );
 
+	Valve::Vector3 ValveEyePosition(void);
+
+	Valve::Vector3 m_VvecOrigin(void);
+
+	Valve::Vector3 m_VvecViewOffset(void);
+
 	Vector		EyePosition( void );
 	Vector		m_vecOrigin( void );
 	Vector		m_vecViewOffset( void );

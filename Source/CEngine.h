@@ -10,9 +10,12 @@
 class CEngine
 {
 public:
-	int		getBombIndex(void);
-	int		getBombOwner(void);
-	Vector	ViewAngles( void );
+	//uint32_t dwClientState;
+
+	CEngine(void);
+	static std::string GetMapDirectory(void);
+	const char* GetMapName(void);
+	static std::string GetGameDirectory(void);
 };
 
 extern CEngine* g_pEngine;

@@ -9,6 +9,10 @@
 
 #define MAX_MEMORY_MODULE	3
 
+#define INRANGE(x,a,b)		(x >= a && x <= b) 
+#define getBits( x )		(INRANGE(x,'0','9') ? (x - '0') : ((x&(~0x20)) - 'A' + 0xa))
+#define getByte( x ) (getBits(x[0]) << 4 | getBits(x[1]))
+
 namespace Memory
 {
 	extern HANDLE	hProcess;
@@ -16,11 +20,11 @@ namespace Memory
 
 	extern bool		Initialize(std::string szGameWindowTitle);
 	extern DWORD	GetModule(std::string szName);
-	extern void		AddModule(std::string szName, std::string szModuleName);
-	extern bool		HideThread(HANDLE hThread);
 	extern DWORD GetModuleSize(std::string szModuleName);
-	extern DWORD FindPattern(BYTE * ArrayOfBytes, std::string Module, int SizeOf);
-	extern DWORD FindPattern(HANDLE process, DWORD start, DWORD size, const char* sig, const char* mask, DWORD pattern_offset, DWORD address_offset);
+	extern void		AddModule(std::string szName, std::string szModuleName);
+	//extern bool		HideThread(HANDLE hThread);
+	extern DWORD GetModuleSize(std::string szModuleName);
+	extern uintptr_t FindPattern(const std::string& module, const char* pattern, uintptr_t patternOffset, uintptr_t addressOffset);
 
 
 	template<class T> T Read(DWORD dwBaseAddress)

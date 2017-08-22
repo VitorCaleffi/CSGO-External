@@ -17,11 +17,13 @@
 #include <fstream>
 #include <ctime>
 #include <string>
+#include <array>
 
 #pragma comment( lib, "d3d9.lib" )
 #pragma comment( lib, "d3dx9.lib" )
 #pragma comment( lib, "dwmapi.lib" )
 
+#include "ValveBSP\BSPParser.hpp"
 #include "Helper.h"
 
 #include "Vector.h"
